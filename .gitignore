@@ -1,0 +1,49 @@
+# Rust build outputs (Cargo.lock is intentionally committed for this app).
+/target/
+/dist/
+/output/
+*.exe
+*.pdb
+*.dll
+*.lib
+*.exp
+*.obj
+*.rlib
+*.rmeta
+
+# Dependency checkouts and local reverse-engineering material.
+/.deps/
+/windows-rs/
+/docs/local-research/
+/asm/
+/modules/
+/winui-research/
+/edifier_tempohub_setup_*
+/product_list_decrypted.json
+
+# Credentials and machine-local configuration.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+/.cargo/config.toml
+
+# Python tooling, captures and editor/OS caches.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.log
+*_log.txt
+*.dmp
+*.tmp
+*.bak
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store

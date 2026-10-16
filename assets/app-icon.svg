@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>Halo Soundbar independent app icon</title>
+  <rect x="20" y="20" width="472" height="472" rx="112" fill="#111E35"/>
+  <path d="M132.0 222 A124.0 124.0 0 0 1 380.0 222" fill="none" stroke="#657CF5" stroke-width="16"/>
+  <path d="M170.0 222 A86.0 86.0 0 0 1 342.0 222" fill="none" stroke="#57E5D1" stroke-width="16"/>
+  <rect x="76" y="260" width="360" height="142" rx="62" fill="#080F20"/>
+  <rect x="76" y="246" width="360" height="142" rx="62" fill="#EAF4FF"/>
+  <circle cx="155" cy="317" r="43" fill="#172B46"/>
+  <circle cx="357" cy="317" r="43" fill="#172B46"/>
+  <circle cx="155" cy="317" r="31.0" fill="#30CBBB"/>
+  <circle cx="155" cy="317" r="23.0" fill="#172B46"/>
+  <circle cx="357" cy="317" r="31.0" fill="#7B83F7"/>
+  <circle cx="357" cy="317" r="23.0" fill="#172B46"/>
+  <path d="M237 307 L237 327" stroke="#34506F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M256 295 L256 339" stroke="#34506F" stroke-width="8" stroke-linecap="round"/>
+  <path d="M275 307 L275 327" stroke="#34506F" stroke-width="8" stroke-linecap="round"/>
+</svg>

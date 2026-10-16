@@ -1,0 +1,50 @@
+[workspace]
+
+[package]
+name = "halo-soundbar"
+version = "1.0.0"
+edition = "2021"
+description = "Local (offline) control panel for the EDIFIER Halo Soundbar, reverse engineered from EDIFIER TempoHub"
+rust-version = "1.95"
+publish = false
+repository = "https://github.com/holydoooge/halo-soundbar"
+default-run = "halo-soundbar"
+
+[[bin]]
+name = "halo-soundbar"
+path = "src/main.rs"
+
+[[bin]]
+name = "halo-diag"
+path = "src/diag.rs"
+
+[lib]
+name = "halo_soundbar"
+path = "src/lib.rs"
+
+[dependencies]
+# Pin the UI framework and its workspace dependencies for reproducible builds.
+windows-reactor = { git = "https://github.com/microsoft/windows-rs.git", rev = "f5f7418c950e18a52a93d5af211d55050f860383" }
+
+# Win32 APIs used by the HID transport layer.
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_IO",
+    "Win32_System_Threading",
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_Devices_HumanInterfaceDevice",
+    "Win32_Storage_FileSystem",
+    "Graphics", ] }
+
+# JSON payloads for the vendor's device-state protocol.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 2
+
+[build-dependencies]
+# Embeds the window icon and version info into the PE resources, which is what
+# Explorer reads — `WindowVisuals::icon` only covers the runtime window.
+winresource = "0.1"
