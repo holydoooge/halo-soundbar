@@ -11,6 +11,7 @@
 
 #![windows_subsystem = "windows"]
 
+mod settings;
 mod ui;
 
 fn main() {

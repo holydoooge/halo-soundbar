@@ -12,6 +12,7 @@ use windows_reactor::*;
 // `windows_reactor::TitleBar` (the widget) collides with `Symbol::TitleBar`.
 use windows_reactor::TitleBar as TitleBarTrigger;
 
+use crate::settings;
 use halo_soundbar::device::{Command, Session, Snapshot};
 use halo_soundbar::ec_state;
 
@@ -48,6 +49,7 @@ impl Bridge {
 pub enum Message {
     Tick,
     Navigate(String),
+    ThemeSelected(Option<usize>),
     VolumeChanged(f64),
     /// Kept for tooling/tests. The GUI never asks for a refresh: the session
     /// thread reconnects and polls on its own.
@@ -113,6 +115,9 @@ pub struct App {
     bridge: Arc<Bridge>,
     snapshot: Snapshot,
     page: String,
+    theme: WindowTheme,
+    theme_file: Option<std::path::PathBuf>,
+    theme_save_failed: bool,
     /// Live slider position, so the UI stays responsive before the device answers.
     volume_drag: Option<f64>,
     volume_at: Option<Instant>,
@@ -539,6 +544,21 @@ impl App {
                 self.flush_pending();
                 self.page = page;
             }
+            Message::ThemeSelected(index) => {
+                let theme = match index {
+                    Some(0) => WindowTheme::System,
+                    Some(1) => WindowTheme::Light,
+                    Some(2) => WindowTheme::Dark,
+                    _ => return,
+                };
+                if self.theme != theme {
+                    self.theme = theme;
+                    self.theme_save_failed = self
+                        .theme_file
+                        .as_deref()
+                        .is_none_or(|path| settings::save_theme(path, theme).is_err());
+                }
+            }
             Message::VolumeChanged(value) => {
                 let level = value
                     .round()
@@ -703,11 +723,19 @@ impl Component for App {
 
         // A repeating tick: re-arm after each delivery.
         let timer = context.set_timeout(UI_POLL, Message::Tick);
+        let theme_file = settings::theme_file();
+        let theme = theme_file
+            .as_deref()
+            .map(settings::load_theme)
+            .unwrap_or_default();
 
         Self {
             bridge,
             snapshot: Snapshot::default(),
             page: "console".to_string(),
+            theme,
+            theme_file,
+            theme_save_failed: false,
             volume_drag: None,
             volume_at: None,
             brightness_sent: None,
@@ -739,7 +767,7 @@ impl Component for App {
         context.window_title("EDIFIER Halo Soundbar");
         context.window_visuals(
             WindowVisuals::new()
-                .theme(WindowTheme::System)
+                .theme(self.theme)
                 .backdrop(WindowBackdrop::Mica)
                 .client_size(1000.0, 700.0)
                 // `icon()` wants a path, so the embedded .ico is materialised
@@ -1088,6 +1116,33 @@ impl App {
                 .is_none_or(|f| f.device_off);
         let can_reset = self.snapshot.connected;
 
+        let appearance = section(
+            "外观",
+            StackPanel::new()
+                .spacing(8.0)
+                .children((
+                    RadioButtons::new()
+                        .header("主题")
+                        .items_source(["跟随系统", "浅色", "深色"])
+                        .selected_index(match self.theme {
+                            WindowTheme::System => 0,
+                            WindowTheme::Light => 1,
+                            WindowTheme::Dark => 2,
+                        })
+                        .max_columns(3)
+                        .on_selection_changed(context.callback(Message::ThemeSelected)),
+                    TextBlock::new()
+                        .text(if self.theme_save_failed {
+                            "主题已切换，但无法保存此选择，重启后可能恢复原主题。"
+                        } else {
+                            "立即生效，重启后保留你的选择。"
+                        })
+                        .text_wrapping(TextWrapping::Wrap)
+                        .opacity(0.7),
+                ))
+                .into(),
+        );
+
         let about = section(
             "版本",
             StackPanel::new()
@@ -1120,7 +1175,7 @@ impl App {
                 .into(),
         );
 
-        let mut sections = vec![about, reset];
+        let mut sections = vec![appearance, about, reset];
         if can_power_off {
             sections.push(section(
                 "关机",
@@ -1436,6 +1491,9 @@ mod tests {
                 bridge,
                 snapshot,
                 page: "console".into(),
+                theme: WindowTheme::System,
+                theme_file: None,
+                theme_save_failed: false,
                 volume_drag: None,
                 volume_at: None,
                 brightness_sent: None,
