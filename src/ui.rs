@@ -1149,8 +1149,8 @@ const CARD_GAP: f64 = 8.0;
 
 /// One selectable card: a large icon over its label, on a bordered tile.
 ///
-/// The selected card is marked by the bold label, a brighter border and the
-/// `_on` artwork — no accent fill, which washed out the line-art icons.
+/// Selection uses an accent border; the monochrome glyph follows the active
+/// WinUI foreground theme rather than retaining the PNG's fixed white pixels.
 fn grid_card(
     label: &str,
     file: &str,
@@ -1158,18 +1158,25 @@ fn grid_card(
     enabled: bool,
     on_click: Callback<()>,
 ) -> KeyedView {
-    // One artwork per card: the official `_on` variant is the dimmer of the two
-    // (thin, low-contrast strokes), so the brighter `_off` drawing is used for
-    // both states.
-    let art: View = match icon_bytes(file) {
-        Some(bytes) => Image::new()
+    let themed_icon = card_icon_uri(file)
+        .and_then(|uri| BitmapIcon::new().uri_source(uri).ok())
+        .map(|icon| {
+            icon.show_as_monochrome(true)
+                .width(40.0)
+                .height(40.0)
+                .into()
+        });
+    let art: View = match (themed_icon, icon_bytes(file)) {
+        (Some(icon), _) => icon,
+        // Preserve an in-memory fallback if the temporary cache is unavailable.
+        (None, Some(bytes)) => Image::new()
             .source_data(EncodedImage::from_static(bytes))
             .width(40.0)
             .height(40.0)
             .stretch(Stretch::Uniform)
             .into(),
         // Only reachable if a name is mistyped; the label keeps the card usable.
-        None => TextBlock::new().text(label).into(),
+        (None, None) => TextBlock::new().text(label).into(),
     };
     // Neither the artwork nor the text changes with selection — the accent ring
     // on the tile is the only state indicator.
@@ -1307,6 +1314,47 @@ fn icon_bytes(name: &str) -> Option<&'static [u8]> {
         .iter()
         .find(|(key, _)| *key == name)
         .map(|(_, bytes)| *bytes)
+}
+
+/// BitmapIcon accepts a URI instead of encoded bytes. Cache the embedded PNGs
+/// once; the program still ships as a single executable without loose assets.
+fn card_icon_uri(name: &str) -> Option<&'static str> {
+    static URIS: std::sync::OnceLock<Vec<(&'static str, String)>> = std::sync::OnceLock::new();
+    URIS.get_or_init(|| {
+        use std::hash::{Hash, Hasher};
+        ICONS
+            .iter()
+            .filter_map(|(name, bytes)| {
+                let mut hash = std::collections::hash_map::DefaultHasher::new();
+                bytes.hash(&mut hash);
+                let path =
+                    std::env::temp_dir().join(format!("halo-card-{:016x}.png", hash.finish()));
+                if !path.exists() {
+                    std::fs::write(&path, bytes).ok()?;
+                }
+                let path = path.to_string_lossy().replace('\\', "/");
+                let mut uri = String::from(if path.starts_with("//") {
+                    "file:"
+                } else {
+                    "file:///"
+                });
+                for byte in path.bytes() {
+                    if byte.is_ascii_alphanumeric()
+                        || matches!(byte, b'-' | b'.' | b'_' | b'~' | b'/' | b':')
+                    {
+                        uri.push(char::from(byte));
+                    } else {
+                        use std::fmt::Write;
+                        write!(&mut uri, "%{byte:02X}").ok()?;
+                    }
+                }
+                Some((*name, uri))
+            })
+            .collect()
+    })
+    .iter()
+    .find(|(file, _)| *file == name)
+    .map(|(_, uri)| uri.as_str())
 }
 
 /// Resource slug for effect `index`, matching the official drawable names.
