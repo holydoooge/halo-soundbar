@@ -2,6 +2,8 @@
 
 ## 连接
 
+在 [GitHub Releases](https://github.com/holydoooge/halo-soundbar/releases/latest) 的 Assets 中下载 Windows x64 exe。运行需要 Windows App Runtime 2（2.5.1.0 或兼容更新版本，x64）；缺少时请按启动提示，从 [微软官方下载页](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads) 安装稳定版 x64 Runtime。
+
 使用 USB 连接 **EDIFIER Halo Soundbar**，启动 `halo-soundbar.exe`。
 标题栏显示“已连接”后即可使用。本程序仅识别这一款设备。
 

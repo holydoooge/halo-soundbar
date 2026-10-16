@@ -18,6 +18,15 @@
 
 蓝牙控制和自定义 EQ 不在当前实现范围内。验证范围与未测场景见 [测试记录](docs/TESTING.md)。
 
+## 直接下载
+
+前往 [GitHub Releases](https://github.com/holydoooge/halo-soundbar/releases/latest)，在 **Assets** 中下载 `halo-soundbar-v1.0.0-windows-x64.exe` 后运行，无需编译源码。
+
+适用于 Windows x64，仅控制 Halo Soundbar。主题切换位于“设置 → 外观 → 主题”，颜色需要点击“应用此颜色”后生效。
+`SHA256SUMS.txt` 用于核对下载文件的 SHA-256；GitHub 自动提供的 Source code 文件是源码，不是可运行程序。
+
+运行需要 **Windows App Runtime 2（2.5.1.0 或兼容更新版本，x64）**。如果首次启动提示缺少运行库，请从 [微软官方 Windows App SDK 下载页](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads) 安装对应的稳定版 x64 Runtime 后重试。运行库不包含在这个 exe 中。
+
 ## 构建与运行
 
 需要 Windows、Rust **1.95 或更新版本的 MSVC 工具链**、Visual Studio C++ Build Tools 与 Windows SDK。
@@ -38,7 +47,7 @@ cargo build --locked --release --bin halo-soundbar
 
 `windows-reactor` 固定到 `microsoft/windows-rs` 的具体提交，由 Cargo 自动获取；无需手动复制本地 `windows-rs` 目录。
 
-构建后的 `target/release/halo-soundbar.exe` 已内嵌图标，可复制到其他目录运行，无需附带源码和 `assets/`。
+构建后的 `target/release/halo-soundbar.exe` 已内嵌图标，在已安装所需 Windows App Runtime 的系统上可复制到其他目录运行，无需附带源码和 `assets/`。
 构建产物不提交到 Git 仓库。
 
 ## 验证
